@@ -80,7 +80,6 @@ length(f)
 ## now we consider the E step
 
 # H is a list, with an entry for each diploid patient/individual (length n)
-H = list()
 
 # each entry of H will in turn be a vector or list.  the number of such entries will be 2**(nh - 1), 
 #where nh is the number of heterozygotes for that individual/entry
@@ -97,7 +96,8 @@ H = list()
 perm = matrix(c(1,1,1,1,1,1,1,2,1,1,2,1,1,1,2,2,1,2,1,1,1,2,1,2,1,2,2,1,1,2,2,2),nrow=8, ncol=4, byrow=T) 
 
 # initialize entries of Exp_haps to zero.  Basically this will be just like your original "existence" dictionary;  master list of possible haplotypes given G
-exp_haps = rep(0,dim(G)[1])
+H = list()
+exp_haps = rep(0,length(master_haplotype))
 for (n in 1:dim(G)[1]) {
   
   H = append(H, n)
@@ -122,6 +122,7 @@ for (n in 1:dim(G)[1]) {
     #af_haplotype_configs[paste(c(haplotype1,'/',haplotype2), collapse='')] = f_haplotype_config
     #H[[n]][p] = paste(c(haplotype1,'/',haplotype2,'-',f_haplotype_config), collapse='')
     H[[n]][p] = f_haplotype_config
+    names(H[[n]])[p] = paste( sort( c(haplotype1, haplotype2)), collapse="/" )
     #names(H[[n]]) <- c(names(H[[n]]) , paste( sort( haplotype1, haplotype2), sep="/", collapse="" ) )  # same as line below
     #names(H[[n]])[ length(H[[n]]) ] <-  paste( sort( haplotype1, haplotype2), sep="/", collapse="" ) 
   }
@@ -131,7 +132,12 @@ for (n in 1:dim(G)[1]) {
     
     # grab the two haplotypes associated with perm p (haplotype1, haplotype2)
     # add the expected haplotype count H[[n]][p] to Exp_haps for each of these 2 (!) haplotypes   
-    # then after that, it is easy to do the M step 
+    # then after that, it is easy to do the M step
+    haplotype1 = unlist(strsplit(names(H[[n]])[p], "/"))[1]
+    haplotype2 = unlist(strsplit(names(H[[n]])[p], "/"))[2]
+    
+    #todo. add to exp_haps
+    
   }
 }
 
