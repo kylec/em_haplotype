@@ -97,9 +97,9 @@ for (n in 1:sample_num) {
 }
 
 # initiate f to 1/ LEN
-#x <- (runif(length(f)) + 1 ) 
-#f = f*x/sum(x)
-f = f/length(f)
+x <- (runif(length(f)) + 1 ) 
+f = f*x/sum(x)
+#f = f/length(f)
 
 ## E step
 #
@@ -117,11 +117,11 @@ f = f/length(f)
 perm = matrix(c(1,1,1,1,1,1,1,2,1,1,2,1,1,1,2,2,1,2,1,1,1,2,1,2,1,2,2,1,1,2,2,2),nrow=8, ncol=4, byrow=T) 
 
 logdlikevec <- NULL
-num_iter = 10
+num_iter = 2
 total_iter = 0
 
 # do multiple em_step
-for ( j in 1:1) {
+for ( j in 1:10) {
 # loop for em step
 for (i in 1:num_iter) {
     # H is a list of samples, each sample has a list of haplotype and probability
@@ -154,8 +154,10 @@ for (i in 1:num_iter) {
     
       }
   
+      # dlike_n is the sum of likelihood of haplotype configs for a patient
       dlike_n = 0
       # normalize config probability for a sample by sum
+      # h[[n]][p] =  2 * f_haplotype1 * f_haplotype2
       for (p in 1:dim(perm)[1]) {
         dlike_n = dlike_n + H[[n]][p]
         H[[n]][p]  <- H[[n]][p] / hconfig_sum
@@ -169,7 +171,8 @@ for (i in 1:num_iter) {
         exp_haps[haplotype1] = exp_haps[haplotype1] + H[[n]][p]
         exp_haps[haplotype2] = exp_haps[haplotype2] + H[[n]][p]
       }
-  
+      
+      #dlike is the sum of log likelihood from all samples' config's probability  
       dlike = dlike + log(dlike_n)
     }
     
@@ -180,20 +183,26 @@ for (i in 1:num_iter) {
     #    	count the number of EXPECTED times we see it  -- this is done in 2nd pound sign above
     #     simply grab the value associated with the key defined by this haplotype from Exp-haps
     #			divide by (2*n), new estimate of f
-
+    ftest = 0;
+    exp_haps_sum = 0;
     for (i in 1:length(exp_haps)) {
       f_new = exp_haps[i]/(2*sample_num)
       f[names(exp_haps[i])] = f_new
+      ftest = ftest + f_new
+      exp_haps_sum = exp_haps_sum + exp_haps[i] 
+      exp_haps[i] = 0 # reset exp_haps to 0
     }
+    print(exp_haps_sum)
+    print(ftest)
     head(f)
     head(exp_haps)
 }
 
 total_iter = total_iter + num_iter
 
-#png(paste(total_iter, "iter.png", sep="_"))
+png(paste("dlike", total_iter, "iter.png", sep="_"))
 plot(logdlikevec)
-#dev.off()
+dev.off()
 
 # stopping criteria
 # when the likelihood changes less than delta #
